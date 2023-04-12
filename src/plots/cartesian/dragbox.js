@@ -88,6 +88,9 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
     var scaleX;
     var scaleY;
 
+    // offset the x location of the box if needed
+    x += plotinfo.yaxis._shift;
+
     function recomputeAxisLists() {
         xa0 = plotinfo.xaxis;
         ya0 = plotinfo.yaxis;
@@ -724,15 +727,25 @@ function makeDragBox(gd, plotinfo, x, y, w, h, ns, ew) {
             }
         }
 
+        function pushActiveAxIdsSynced(axList, axisType) {
+            for(i = 0; i < axList.length; i++) {
+                var axListI = axList[i];
+                var axListIType = axListI[axisType];
+                if(!axListI.fixedrange && axListIType.tickmode === 'sync') activeAxIds.push(axListIType._id);
+            }
+        }
+
         if(editX) {
             pushActiveAxIds(xaxes);
             pushActiveAxIds(links.xaxes);
             pushActiveAxIds(matches.xaxes);
+            pushActiveAxIdsSynced(plotinfo.overlays, 'xaxis');
         }
         if(editY) {
             pushActiveAxIds(yaxes);
             pushActiveAxIds(links.yaxes);
             pushActiveAxIds(matches.yaxes);
+            pushActiveAxIdsSynced(plotinfo.overlays, 'yaxis');
         }
 
         updates = {};
@@ -1113,7 +1126,7 @@ function makeZoombox(zoomlayer, lum, xs, ys, path0) {
     return zoomlayer.append('path')
         .attr('class', 'zoombox')
         .style({
-            'fill': lum > 0.2 ? 'rgba(0,0,0,0)' : 'rgba(255,255,255,0)',
+            fill: lum > 0.2 ? 'rgba(0,0,0,0)' : 'rgba(255,255,255,0)',
             'stroke-width': 0
         })
         .attr('transform', strTranslate(xs, ys))

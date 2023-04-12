@@ -9,6 +9,158 @@ To see all merged commits on the master branch that will be part of the next plo
 
 where X.Y.Z is the semver of most recent plotly.js release.
 
+## [2.20.0] -- 2023-03-15
+
+### Added
+ - Add `title.automargin` to enable automatic top and bottom margining for both container and paper referenced titles [[#6428](https://github.com/plotly/plotly.js/pull/6428)],
+   with thanks to [Gamma Technologies](https://www.gtisoft.com/) for sponsoring the related development.
+
+
+## [2.19.1] -- 2023-03-14
+
+### Fixed
+ - Ensure slider range stays in bounds during the drag [[#4448](https://github.com/plotly/plotly.js/pull/4448)],
+   with thanks to @jay-bis for the contribution!
+
+
+## [2.19.0] -- 2023-03-13
+
+### Added
+ - Add `label` attribute to shapes [[#6454](https://github.com/plotly/plotly.js/pull/6454)],
+   with thanks to the [Volkswagen](https://www.volkswagenag.com) Center of Excellence for Battery Systems for sponsoring development!
+ - Add `labelalias` to various axes namely cartesian, gl3d, polar, smith, ternary, carpet,
+   indicator and colorbar [[#6481](https://github.com/plotly/plotly.js/pull/6481)],
+   this feature was anonymously sponsored: thank you to our sponsor!
+
+### Changed
+ - Upgrade `is-mobile` dependency [[#6517](https://github.com/plotly/plotly.js/pull/6517)]
+
+### Fixed
+ - Avoid overlap of point and axis hover labels for `hovermode: 'x'|'y'` [[#6442](https://github.com/plotly/plotly.js/pull/6442)],
+   with thanks to @dagroe for the contribution!
+
+
+## [2.18.2] -- 2023-02-15
+
+### Fixed
+ - Avoid attaching internal d3 object to the window (regression introduced in 2.17.0) [[#6487](https://github.com/plotly/plotly.js/pull/6487)]
+ - Correct the order of lower fence and upper fence in the French locale (fr) [[#6476](https://github.com/plotly/plotly.js/pull/6476)],
+   with thanks to @Gagaro for the contribution!
+ - Correct formats in the Peruvian locale (es-pe) [[#6451](https://github.com/plotly/plotly.js/pull/6451)],
+   with thanks to @andresrcs for the contribution!
+
+
+## [2.18.1] -- 2023-02-02
+
+### Changed
+ - Bump `d3-interpolate` and `d3-color` to v3 to address audit warnings [[#6463](https://github.com/plotly/plotly.js/pull/6463)]
+
+### Fixed
+ - Fix scaling of exports e.g. the SVG format by not adding `vector-effect` CSS to static plots [[#6445](https://github.com/plotly/plotly.js/pull/6445)]
+ - Fix hover on IE (regression introduced in 2.5.0) [[#6466](https://github.com/plotly/plotly.js/pull/6466)]
+
+
+## [2.18.0] -- 2023-01-19
+
+### Added
+- Add `sync` tickmode option [[#6356](https://github.com/plotly/plotly.js/pull/6356), [#6443](https://github.com/plotly/plotly.js/pull/6443)],
+  with thanks to @filipesantiagoAM and @VictorBezak for the contribution!
+
+### Changed
+ - Improve detection of mobile & tablet devices for WebGL rendering by upgrading `is-mobile` [[#6432](https://github.com/plotly/plotly.js/pull/6432)]
+
+### Fixed
+ - Fix library's imported name using `requirejs` AMD loader (regression introduced in 2.17.0) [[#6440](https://github.com/plotly/plotly.js/pull/6440)]
+
+
+## [2.17.1] -- 2023-01-09
+
+### Fixed
+ - Fix line redraw (regression introduced in 2.15.0) [[#6429](https://github.com/plotly/plotly.js/pull/6429)]
+
+
+## [2.17.0] -- 2022-12-22
+
+### Added
+ - Add `shift` and `autoshift` to cartesian y axes to help avoid overlapping of multiple axes [[#6334](https://github.com/plotly/plotly.js/pull/6334)],
+   with thanks to [Gamma Technologies](https://www.gtisoft.com) for sponsoring the related development!
+ - Introduce group attributes for `scatter` trace i.e. `alignmentgroup`, `offsetgroup`, `scattermode` and `scattergap` [[#6381](https://github.com/plotly/plotly.js/pull/6381)],
+   this feature was anonymously sponsored: thank you to our sponsor!
+ - Add `marker.cornerradius` attribute to `treemap` trace [[#6351](https://github.com/plotly/plotly.js/pull/6351)]
+
+### Changed
+ - Change bundler from browserify to webpack [[#6355](https://github.com/plotly/plotly.js/pull/6355)]
+
+### Fixed
+ - Fix auto `backoff` when marker symbols and sizes are arrays [[#6414](https://github.com/plotly/plotly.js/pull/6414)]
+ - Avoid displaying resize cursor on static sliders [[#6397](https://github.com/plotly/plotly.js/pull/6397)]
+
+
+## [2.16.5] -- 2022-12-13
+
+### Fixed
+ - Disable slider interactions when `staticPlot` is set to true [[#6393](https://github.com/plotly/plotly.js/pull/6393)]
+
+
+## [2.16.4] -- 2022-12-07
+
+### Fixed
+ - Fix `scattermapbox` redraw (regression introduced in 2.16.0) [[#6387](https://github.com/plotly/plotly.js/pull/6387)]
+
+
+## [2.16.3] -- 2022-11-16
+
+### Fixed
+ - Fix hover on multicategory axes [[#6360](https://github.com/plotly/plotly.js/pull/6360)],
+   with thanks to @filipesantiagoAM for the contribution!
+
+
+## [2.16.2] -- 2022-11-11
+
+### Fixed
+ - Fix mapbox clearOutline calls (regression introduced in 2.13.0) [[#6367](https://github.com/plotly/plotly.js/pull/6367)]
+
+
+## [2.16.1] -- 2022-10-21
+
+### Fixed
+ - Fix `choroplethmapbox` selection when adding new traces on top [[#6345](https://github.com/plotly/plotly.js/pull/6345)]
+
+
+## [2.16.0] -- 2022-10-14
+
+### Added
+ - Add clustering options to `scattermapbox` [[#5827](https://github.com/plotly/plotly.js/pull/5827)],
+   with thanks to @elben10 for the contribution!
+ - Add bounds to mapbox suplots [[6339](https://github.com/plotly/plotly.js/pull/6339)]
+
+
+## [2.15.1] -- 2022-10-11
+
+### Fixed
+ - Fix latest version of plotly.js main module on npm 
+
+
+## [2.15.0] -- 2022-10-06
+
+### Added
+ - Add `angle`, `angleref` and `standoff` to `marker` and add `backoff` to `line`; also introduce new arrow symbols to facilitate drawing networks [[#6297](https://github.com/plotly/plotly.js/pull/6297)]
+ - Add `minreducedwidth` and `minreducedheight` to layout for increasing control over automargin [[#6307](https://github.com/plotly/plotly.js/pull/6307)]
+ - Add `entrywidth` and `entrywidthmode` to legend [[#6202](https://github.com/plotly/plotly.js/pull/6202), [#6324](https://github.com/plotly/plotly.js/pull/6324)]
+
+### Changed
+ - Use valType of `angle` for `rotation` in `pie` [[#6304](https://github.com/plotly/plotly.js/pull/6304)]
+
+### Fixed
+ - Fix mapbox `touch event` after switching back from select mode [[#6281](https://github.com/plotly/plotly.js/pull/6281)],
+   with thanks to @mmtmr for the contribution!
+ - Fix automargin to update axis titles in redraws [[#6312](https://github.com/plotly/plotly.js/pull/6312)]
+ - Fix exporting patterns with transparent color [[#6318](https://github.com/plotly/plotly.js/pull/6318)]
+ - Fix exporting text on empty slices [[#6335](https://github.com/plotly/plotly.js/pull/6335)]
+ - Disable interactions for `treemap`, `icicle`, `sunburst`, `pie`, `funnelarea`, 
+   `parcats`, `parcoords` and `sankey` traces when `staticPlot` is set to true [[#6296](https://github.com/plotly/plotly.js/pull/6296)]
+   
+
 ## [2.14.0] -- 2022-08-10
 
 ### Added

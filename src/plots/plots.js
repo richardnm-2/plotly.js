@@ -14,6 +14,7 @@ var BADNUM = require('../constants/numerical').BADNUM;
 
 var axisIDs = require('./cartesian/axis_ids');
 var clearOutline = require('../components/shapes/handle_outline').clearOutline;
+var scatterAttrs = require('../traces/scatter/layout_attributes');
 
 var animationAttrs = require('./animation_attributes');
 var frameAttrs = require('./frame_attributes');
@@ -132,7 +133,7 @@ plots.addLinks = function(gd) {
         s.style({
             'font-family': '"Open Sans", Arial, sans-serif',
             'font-size': '12px',
-            'fill': Color.defaultLine,
+            fill: Color.defaultLine,
             'pointer-events': 'all'
         })
         .each(function() {
@@ -184,7 +185,7 @@ function positionPlayWithData(gd, container) {
     var link = container.append('a')
         .attr({
             'xlink:xlink:href': '#',
-            'class': 'link--impt link--embedview',
+            class: 'link--impt link--embedview',
             'font-weight': 'bold'
         })
         .text(gd._context.linkText + ' ' + String.fromCharCode(187));
@@ -1320,6 +1321,7 @@ plots.supplyTraceDefaults = function(traceIn, traceOut, colorIndex, layout, trac
                 'showlegend'
             );
 
+            coerce('legendwidth');
             coerce('legendgroup');
             coerce('legendgrouptitle.text');
             coerce('legendrank');
@@ -1478,15 +1480,41 @@ plots.supplyLayoutGlobalDefaults = function(layoutIn, layoutOut, formatObj) {
 
     coerce('title.text', layoutOut._dfltTitle.plot);
     coerce('title.xref');
-    coerce('title.yref');
-    coerce('title.x');
-    coerce('title.y');
-    coerce('title.xanchor');
-    coerce('title.yanchor');
+    var titleYref = coerce('title.yref');
     coerce('title.pad.t');
     coerce('title.pad.r');
     coerce('title.pad.b');
     coerce('title.pad.l');
+    var titleAutomargin = coerce('title.automargin');
+
+    coerce('title.x');
+    coerce('title.xanchor');
+    coerce('title.y');
+    coerce('title.yanchor');
+
+    if(titleAutomargin) {
+        // when automargin=true
+        // title.y is 1 or 0 if paper ref
+        // 'auto' is not supported for either title.y or title.yanchor
+
+        // TODO: mention this smart default in the title.y and title.yanchor descriptions
+
+        if(titleYref === 'paper') {
+            if(layoutOut.title.y !== 0) layoutOut.title.y = 1;
+
+            if(layoutOut.title.yanchor === 'auto') {
+                layoutOut.title.yanchor = layoutOut.title.y === 0 ? 'top' : 'bottom';
+            }
+        }
+
+        if(titleYref === 'container') {
+            if(layoutOut.title.y === 'auto') layoutOut.title.y = 1;
+
+            if(layoutOut.title.yanchor === 'auto') {
+                layoutOut.title.yanchor = layoutOut.title.y < 0.5 ? 'bottom' : 'top';
+            }
+        }
+    }
 
     var uniformtextMode = coerce('uniformtext.mode');
     if(uniformtextMode) {
@@ -1565,6 +1593,8 @@ plots.supplyLayoutGlobalDefaults = function(layoutIn, layoutOut, formatObj) {
         'fx',
         'supplyLayoutGlobalDefaults'
     )(layoutIn, layoutOut, coerce);
+
+    Lib.coerce(layoutIn, layoutOut, scatterAttrs, 'scattermode');
 };
 
 function getComputedSize(attr) {
@@ -1858,6 +1888,7 @@ function initMargins(fullLayout) {
     }
     if(!fullLayout._pushmargin) fullLayout._pushmargin = {};
     if(!fullLayout._pushmarginIds) fullLayout._pushmarginIds = {};
+    if(!fullLayout._reservedMargin) fullLayout._reservedMargin = {};
 }
 
 // non-negotiable - this is the smallest height we will allow users to specify via explicit margins
@@ -1954,6 +1985,17 @@ plots.autoMargin = function(gd, id, o) {
     }
 };
 
+function needsRedrawForShift(gd) {
+    if('_redrawFromAutoMarginCount' in gd._fullLayout) {
+        return false;
+    }
+    var axList = axisIDs.list(gd, '', true);
+    for(var ax in axList) {
+        if(axList[ax].autoshift || axList[ax].shift) return true;
+    }
+    return false;
+}
+
 plots.doAutoMargin = function(gd) {
     var fullLayout = gd._fullLayout;
     var width = fullLayout.width;
@@ -1964,8 +2006,16 @@ plots.doAutoMargin = function(gd) {
 
     var gs = fullLayout._size;
     var margin = fullLayout.margin;
+    var reservedMargins = {t: 0, b: 0, l: 0, r: 0};
     var oldMargins = Lib.extendFlat({}, gs);
 
+    var margins = gd._fullLayout._reservedMargin;
+    for(var key in margins) {
+        for(var side in margins[key]) {
+            var val = margins[key][side];
+            reservedMargins[side] = Math.max(reservedMargins[side], val);
+        }
+    }
     // adjust margins for outside components
     // fullLayout.margin is the requested margin,
     // fullLayout._size has margins and plotsize after adjustment
@@ -2001,14 +2051,16 @@ plots.doAutoMargin = function(gd) {
             var pl = pushleft.size;
             var fb = pushbottom.val;
             var pb = pushbottom.size;
+            var availableWidth = width - reservedMargins.r - reservedMargins.l;
+            var availableHeight = height - reservedMargins.t - reservedMargins.b;
 
             for(var k2 in pushMargin) {
                 if(isNumeric(pl) && pushMargin[k2].r) {
                     var fr = pushMargin[k2].r.val;
                     var pr = pushMargin[k2].r.size;
                     if(fr > fl) {
-                        var newL = (pl * fr + (pr - width) * fl) / (fr - fl);
-                        var newR = (pr * (1 - fl) + (pl - width) * (1 - fr)) / (fr - fl);
+                        var newL = (pl * fr + (pr - availableWidth) * fl) / (fr - fl);
+                        var newR = (pr * (1 - fl) + (pl - availableWidth) * (1 - fr)) / (fr - fl);
                         if(newL + newR > ml + mr) {
                             ml = newL;
                             mr = newR;
@@ -2020,8 +2072,8 @@ plots.doAutoMargin = function(gd) {
                     var ft = pushMargin[k2].t.val;
                     var pt = pushMargin[k2].t.size;
                     if(ft > fb) {
-                        var newB = (pb * ft + (pt - height) * fb) / (ft - fb);
-                        var newT = (pt * (1 - fb) + (pb - height) * (1 - ft)) / (ft - fb);
+                        var newB = (pb * ft + (pt - availableHeight) * fb) / (ft - fb);
+                        var newT = (pt * (1 - fb) + (pb - availableHeight) * (1 - ft)) / (ft - fb);
                         if(newB + newT > mb + mt) {
                             mb = newB;
                             mt = newT;
@@ -2063,16 +2115,17 @@ plots.doAutoMargin = function(gd) {
         }
     }
 
-    gs.l = Math.round(ml);
-    gs.r = Math.round(mr);
-    gs.t = Math.round(mt);
-    gs.b = Math.round(mb);
+
+    gs.l = Math.round(ml) + reservedMargins.l;
+    gs.r = Math.round(mr) + reservedMargins.r;
+    gs.t = Math.round(mt) + reservedMargins.t;
+    gs.b = Math.round(mb) + reservedMargins.b;
     gs.p = Math.round(margin.pad);
     gs.w = Math.round(width) - gs.l - gs.r;
     gs.h = Math.round(height) - gs.t - gs.b;
 
     // if things changed and we're not already redrawing, trigger a redraw
-    if(!fullLayout._replotting && plots.didMarginChange(oldMargins, gs)) {
+    if(!fullLayout._replotting && (plots.didMarginChange(oldMargins, gs) || needsRedrawForShift(gd))) {
         if('_redrawFromAutoMarginCount' in fullLayout) {
             fullLayout._redrawFromAutoMarginCount++;
         } else {
@@ -3131,12 +3184,12 @@ function sortAxisCategoriesByValue(axList, gd) {
     }
 
     var aggFn = {
-        'min': function(values) {return Lib.aggNums(Math.min, null, values);},
-        'max': function(values) {return Lib.aggNums(Math.max, null, values);},
-        'sum': function(values) {return Lib.aggNums(function(a, b) { return a + b;}, null, values);},
-        'total': function(values) {return Lib.aggNums(function(a, b) { return a + b;}, null, values);},
-        'mean': function(values) {return Lib.mean(values);},
-        'median': function(values) {return Lib.median(values);}
+        min: function(values) {return Lib.aggNums(Math.min, null, values);},
+        max: function(values) {return Lib.aggNums(Math.max, null, values);},
+        sum: function(values) {return Lib.aggNums(function(a, b) { return a + b;}, null, values);},
+        total: function(values) {return Lib.aggNums(function(a, b) { return a + b;}, null, values);},
+        mean: function(values) {return Lib.mean(values);},
+        median: function(values) {return Lib.median(values);}
     };
 
     for(i = 0; i < axList.length; i++) {
